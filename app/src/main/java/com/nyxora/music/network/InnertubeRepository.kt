@@ -6,9 +6,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
 import org.json.JSONObject
-import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
 data class SongItem(
@@ -50,11 +48,10 @@ object InnertubeRepository {
         runCatching {
             http.newCall(req).execute().use { resp ->
                 val raw = resp.body?.string() ?: return@withContext emptyList()
-                val shelfRegex = Regex(""""videoId""":"([a-zA-Z0-9_-]{11})"""")
                 val seen = mutableSetOf<String>()
                 
-                // Fallback direct regex extraction for speed and reliability
-                val basicMatch = Regex(""videoId":"([^"]{11})","title":\{"runs":\[\{"text":"([^"]+)"").findAll(raw)
+                // FIXED KOTLIN REGEX WITH PROPER ESCAPING
+                val basicMatch = Regex("\"videoId\":\"([^\"]{11})\",\"title\":\\{\"runs\":\\[\\{\"text\":\"([^\"]+)\"").findAll(raw)
                 for (m in basicMatch) {
                     val vid = m.groupValues[1]
                     val title = m.groupValues[2]
